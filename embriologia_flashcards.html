@@ -1,0 +1,450 @@
+
+<h2 class="sr-only">Flashcards interactivas de Embriología - Semanas 1, 2 y 3</h2>
+
+<style>
+  :root {
+    --card-bg: var(--color-background-primary);
+    --card-border: var(--color-border-tertiary);
+    --accent: #1D9E75;
+    --accent-light: #E1F5EE;
+    --accent-dark: #085041;
+    --week1: #534AB7;
+    --week1-light: #EEEDFE;
+    --week2: #D85A30;
+    --week2-light: #FAECE7;
+    --week3: #185FA5;
+    --week3-light: #E6F1FB;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body { font-family: var(--font-sans); }
+
+  .container { padding: 1rem 0; }
+
+  .header { text-align: center; margin-bottom: 1.5rem; }
+  .header h1 { font-size: 20px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 0.5rem; }
+  .header p { font-size: 13px; color: var(--color-text-secondary); }
+
+  .filters {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+  }
+
+  .filter-btn {
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1.5px solid var(--color-border-secondary);
+    background: var(--color-background-primary);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    color: var(--color-text-secondary);
+    transition: all 0.15s;
+  }
+  .filter-btn:hover { background: var(--color-background-secondary); }
+  .filter-btn.active-all { background: #5FCA9A; color: #04342C; border-color: #1D9E75; }
+  .filter-btn.active-1 { background: var(--week1-light); color: var(--week1); border-color: var(--week1); }
+  .filter-btn.active-2 { background: var(--week2-light); color: var(--week2); border-color: var(--week2); }
+  .filter-btn.active-3 { background: var(--week3-light); color: var(--week3); border-color: var(--week3); }
+
+  .stats-bar {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+    font-size: 13px;
+    color: var(--color-text-secondary);
+  }
+  .stats-bar span b { color: var(--color-text-primary); font-weight: 500; }
+
+  .card-area {
+    perspective: 1200px;
+    max-width: 580px;
+    margin: 0 auto 1.5rem;
+    min-height: 320px;
+    cursor: pointer;
+  }
+
+  .card-inner {
+    width: 100%;
+    height: 100%;
+    min-height: 320px;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.55s cubic-bezier(0.4,0,0.2,1);
+  }
+  .card-inner.flipped { transform: rotateY(180deg); }
+
+  .card-face {
+    position: absolute;
+    width: 100%;
+    min-height: 320px;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: var(--border-radius-lg);
+    border: 0.5px solid var(--card-border);
+    background: var(--card-bg);
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem;
+    user-select: none;
+  }
+
+  .card-back { transform: rotateY(180deg); }
+
+  .card-week-badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    width: fit-content;
+  }
+  .badge-1 { background: var(--week1-light); color: var(--week1); }
+  .badge-2 { background: var(--week2-light); color: var(--week2); }
+  .badge-3 { background: var(--week3-light); color: var(--week3); }
+
+  .card-category {
+    font-size: 11px;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.5rem;
+  }
+
+  .card-question {
+    font-size: 17px;
+    font-weight: 500;
+    color: var(--color-text-primary);
+    line-height: 1.5;
+    flex: 1;
+    display: flex;
+    align-items: center;
+  }
+
+  .card-hint {
+    font-size: 12px;
+    color: var(--color-text-tertiary);
+    margin-top: 1rem;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .card-hint i { font-size: 14px; }
+
+  .card-answer {
+    font-size: 14px;
+    color: var(--color-text-primary);
+    line-height: 1.7;
+    flex: 1;
+    overflow-y: auto;
+  }
+
+  .card-answer .key-term {
+    font-weight: 500;
+    color: var(--accent-dark);
+  }
+
+  .card-answer ul { padding-left: 1.2rem; margin-top: 0.5rem; }
+  .card-answer li { margin-bottom: 4px; }
+
+  .diagram-mini {
+    background: var(--color-background-secondary);
+    border-radius: var(--border-radius-md);
+    padding: 0.75rem;
+    margin-top: 0.75rem;
+    font-size: 12px;
+    color: var(--color-text-secondary);
+  }
+
+  .rating-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 1rem;
+    justify-content: center;
+  }
+  .rating-btn {
+    flex: 1;
+    padding: 8px;
+    border-radius: var(--border-radius-md);
+    border: 0.5px solid var(--color-border-tertiary);
+    background: var(--color-background-secondary);
+    font-size: 12px;
+    cursor: pointer;
+    color: var(--color-text-secondary);
+    transition: all 0.15s;
+    font-family: var(--font-sans);
+  }
+  .rating-btn:hover { border-color: var(--color-border-primary); }
+  .rating-btn.easy:hover { background: #EAF3DE; color: #3B6D11; border-color: #639922; }
+  .rating-btn.medium:hover { background: #FAEEDA; color: #854F0B; border-color: #BA7517; }
+  .rating-btn.hard:hover { background: #FCEBEB; color: #A32D2D; border-color: #E24B4A; }
+
+  .nav-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 580px;
+    margin: 0 auto 1rem;
+    gap: 1rem;
+  }
+  .nav-btn {
+    padding: 8px 18px;
+    border-radius: var(--border-radius-md);
+    border: 0.5px solid var(--color-border-tertiary);
+    background: var(--color-background-primary);
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-sans);
+    transition: background 0.15s;
+  }
+  .nav-btn:hover { background: var(--color-background-secondary); }
+  .nav-btn:disabled { opacity: 0.35; cursor: default; }
+
+  .progress-bar {
+    flex: 1;
+    height: 4px;
+    background: var(--color-background-secondary);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width 0.3s;
+  }
+
+  .counter {
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    min-width: 60px;
+    text-align: center;
+  }
+
+  .shuffle-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0 auto 1.5rem;
+    padding: 8px 20px;
+    border-radius: 20px;
+    border: 0.5px solid var(--color-border-tertiary);
+    background: var(--color-background-primary);
+    font-size: 13px;
+    cursor: pointer;
+    color: var(--color-text-secondary);
+    font-family: var(--font-sans);
+    transition: all 0.15s;
+  }
+  .shuffle-btn:hover { background: var(--color-background-secondary); }
+
+  .score-chip {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-bottom: 1rem;
+    font-size: 12px;
+  }
+  .chip { padding: 3px 10px; border-radius: 12px; font-weight: 500; }
+  .chip-easy { background: #EAF3DE; color: #3B6D11; }
+  .chip-medium { background: #FAEEDA; color: #854F0B; }
+  .chip-hard { background: #FCEBEB; color: #A32D2D; }
+</style>
+
+<div class="container">
+  <div class="header">
+    <h1>Embriología humana</h1>
+    <p>Semanas 1, 2 y 3 · Toca la tarjeta para ver la respuesta</p>
+  </div>
+
+  <div class="filters">
+    <button class="filter-btn active-all" onclick="setFilter('all')">Todas</button>
+    <button class="filter-btn" onclick="setFilter('1')">Semana 1</button>
+    <button class="filter-btn" onclick="setFilter('2')">Semana 2</button>
+    <button class="filter-btn" onclick="setFilter('3')">Semana 3</button>
+    <button class="filter-btn" onclick="setFilter('hard')">Solo difíciles</button>
+  </div>
+
+  <div class="score-chip">
+    <span class="chip chip-easy">✓ <span id="count-easy">0</span> fácil</span>
+    <span class="chip chip-medium">~ <span id="count-medium">0</span> media</span>
+    <span class="chip chip-hard">✗ <span id="count-hard">0</span> difícil</span>
+  </div>
+
+  <div class="card-area" onclick="flipCard()" id="cardArea">
+    <div class="card-inner" id="cardInner">
+      <div class="card-face card-front" id="cardFront">
+        <span class="card-week-badge badge-1" id="weekBadge">Semana 1</span>
+        <div class="card-category" id="cardCategory">Segmentación</div>
+        <div class="card-question" id="cardQuestion">Cargando...</div>
+        <div class="card-hint"><i class="ti ti-rotate" aria-hidden="true"></i> Toca para ver la respuesta</div>
+      </div>
+      <div class="card-face card-back" id="cardBack">
+        <span class="card-week-badge badge-1" id="weekBadgeBack">Semana 1</span>
+        <div class="card-category" id="cardCategoryBack">Segmentación</div>
+        <div class="card-answer" id="cardAnswer">Respuesta aquí</div>
+        <div class="rating-row">
+          <button class="rating-btn easy" onclick="rate('easy', event)"><i class="ti ti-check" aria-hidden="true"></i> Fácil</button>
+          <button class="rating-btn medium" onclick="rate('medium', event)"><i class="ti ti-minus" aria-hidden="true"></i> Medio</button>
+          <button class="rating-btn hard" onclick="rate('hard', event)"><i class="ti ti-x" aria-hidden="true"></i> Difícil</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-row">
+    <button class="nav-btn" onclick="prevCard()" id="btnPrev"><i class="ti ti-arrow-left" aria-hidden="true"></i> Anterior</button>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+    <span class="counter" id="counter">1 / 1</span>
+    <button class="nav-btn" onclick="nextCard()" id="btnNext">Siguiente <i class="ti ti-arrow-right" aria-hidden="true"></i></button>
+  </div>
+
+  <div style="text-align:center;">
+    <button class="shuffle-btn" onclick="shuffle()"><i class="ti ti-arrows-shuffle" aria-hidden="true"></i> Mezclar tarjetas</button>
+  </div>
+</div>
+
+<script>
+const allCards = [
+  {week:1, cat:"Edad gestacional", q:"¿Qué es la edad morfológica del embrión y cómo se calcula?", a:`La <span class="key-term">edad morfológica</span> se calcula a partir de la <b>penetración del ovocito por el espermatozoide</b> (fertilización). Es el método más preciso porque se basa en las características morfológicas del embrión/feto.<br><br>Se diferencia de la <span class="key-term">edad menstrual</span>, que se calcula desde el inicio del último período menstrual y es ~14 días mayor.<div class="diagram-mini">📅 Edad menstrual = edad morfológica + 14 días</div>`},
+  {week:1, cat:"Estadios de Carnegie", q:"¿En cuántos estadios se divide el desarrollo embrionario y hasta cuándo abarcan?", a:`El desarrollo embrionario humano se divide en <span class="key-term">23 estadios u horizontes</span> (clasificación de Streeter / Carnegie).<br><br>Abarcan desde la <b>fertilización hasta el final de la 8ª semana</b>.<br><br>La etapa embrionaria comprende:<ul><li>Período presomítico: semanas 1–3.5</li><li>Período somítico: semana 3.5 a 8</li></ul>`},
+  {week:1, cat:"Segmentación", q:"¿Qué es la segmentación del cigoto y dónde ocurre?", a:`La <span class="key-term">segmentación</span> es el proceso que ocurre en los 3-4 días siguientes a la fertilización y consiste en la <b>formación de blastómeros</b> a partir del cigoto mediante divisiones mitóticas sucesivas.<br><br>Ocurre en el <span class="key-term">interior de las tubas uterinas</span>.<div class="diagram-mini">Cigoto → 2 células → 4 → 8 → 16 → mórula → blastocisto</div>`},
+  {week:1, cat:"Segmentación", q:"¿Qué es el fenómeno de compactación y cuándo ocurre?", a:`El <span class="key-term">fenómeno de compactación</span> ocurre cuando el embrión tiene <b>~8 células</b>. Los blastómeros forman una estructura compacta en la que:<ul><li>Se pierden sus límites externos</li><li>Se establecen complejos de unión (cadherina-E, desmosomas, uniones ocluyentes)</li><li>Se forman uniones de hendidura internas para intercambio iónico</li></ul>Esto prepara al embrión para la diferenciación en trofoblasto y embrioblasto.`},
+  {week:1, cat:"Mórula", q:"¿Qué es la mórula y cuándo se forma?", a:`La <span class="key-term">mórula</span> se forma cuando el embrión alcanza entre <b>16 y 32 células</b> (~3-4 días después de la fertilización). Su nombre viene de su parecido a una mora.<br><br>En cada blastómero se activan genes específicos que destinarán algunas células a partes del embrión y otras a anexos embrionarios.<div class="diagram-mini">🫐 16–32 células | Aún dentro de la zona pelúcida</div>`},
+  {week:1, cat:"Blastocisto", q:"¿Cuáles son las partes del blastocisto y qué origina cada una?", a:`El <span class="key-term">blastocisto</span> tiene tres componentes:<ul><li><span class="key-term">Embrioblasto (masa celular interna)</span>: origina el cuerpo del embrión, amnios, saco vitelino, cordón umbilical y alantoides</li><li><span class="key-term">Trofoblasto</span>: origina las membranas extraembrionarias (corion y placenta)</li><li><span class="key-term">Blastocele</span>: cavidad con líquido que facilita la migración celular posterior</li></ul><div class="diagram-mini">📍 Se forma ~día 5 ± 1 | Aún en zona pelúcida</div>`},
+  {week:1, cat:"Blastocisto", q:"¿Qué es la blastulación?", a:`La <span class="key-term">blastulación</span> es el proceso por el que se forma el blastocisto. Ocurre hacia el <b>día 5 ± 1</b>.<br><br>Los blastómeros se acomodan con 8-10 de ellos agrupándose en el interior formando el embrioblasto, mientras el resto queda en la periferia constituyendo el trofoblasto.<br><br>El volumen total del blastocisto sigue siendo <b>igual al del cigoto</b>.`},
+  {week:1, cat:"Potencialidad", q:"¿Qué diferencia hay entre célula totipotencial, pluripotencial y multipotencial?", a:`<ul><li><span class="key-term">Totipotencial</span>: puede formar un organismo completo con anexos. Es el cigoto y los primeros 6-8 blastómeros</li><li><span class="key-term">Pluripotencial</span>: forma muchas estirpes celulares pero no un organismo completo. Son las células madre embrionarias (stem cells)</li><li><span class="key-term">Multipotencial</span>: solo origina células del tejido al que pertenece. Presentes en médula ósea, etc.</li></ul><div class="diagram-mini">Cigoto → Blastómeros → Células madre → Células diferenciadas</div>`},
+  {week:1, cat:"Trastornos", q:"¿Por qué la primera semana es susceptible a agentes teratogénicos pero el embrión puede recuperarse?", a:`Durante la primera semana, el embrión tiene gran <span class="key-term">capacidad de regulación</span> porque los blastómeros son totipotenciales.<br><br>Si se pierden algunos blastómeros, los restantes pueden dar lugar a un organismo normal.<br><br>Sin embargo, si el daño es severo, el embrión muere y es eliminado, o puede originar malformaciones. Aprox. el <span class="key-term">30% de los cigotos</span> nunca llegan a implantarse.`},
+  {week:2, cat:"Disco bilaminar", q:"¿De qué está formado el disco embrionario bilaminar?", a:`El <span class="key-term">disco embrionario bilaminar</span> se forma hacia el <b>día 7 ± 1</b> y está constituido por dos capas:<ul><li><span class="key-term">Epiblasto</span>: células cúbicas, dorsales</li><li><span class="key-term">Hipoblasto</span>: células aplanadas, ventrales</li></ul>Las células del epiblasto son pluripotenciales y originarán las 3 capas germinativas.<div class="diagram-mini">⬆ Cavidad amniótica / Epiblasto / Hipoblasto / Saco vitelino ⬇</div>`},
+  {week:2, cat:"Estructuras extraembrionarias", q:"¿Qué estructuras se forman durante la segunda semana?", a:`Durante la 2ª semana se forman:<ul><li><span class="key-term">Cavidad amniótica</span>: entre epiblasto y trofoblasto; cubierta por amnioblastos → amnios</li><li><span class="key-term">Endodermo extraembrionario</span>: del hipoblasto, recubre el blastocele → saco vitelino primario</li><li><span class="key-term">Mesodermo extraembrionario</span>: del endodermo extraembrionario</li><li><span class="key-term">Celoma extraembrionario</span>: dentro del mesodermo extraembrionario</li><li><span class="key-term">Tallo de conexión</span>: une disco al trofoblasto</li></ul>`},
+  {week:2, cat:"Implantación", q:"¿Qué es la implantación y cuándo ocurre?", a:`La <span class="key-term">implantación</span> es el proceso por el cual el embrión se introduce en la capa funcional del endometrio, donde permanecerá toda la gestación.<br><br>Ocurre entre los <span class="key-term">días 6 y 13 ± 1</span>.<br><br>Para que ocurra son indispensables:<ul><li>El abandono de la zona pelúcida (eclosión del blastocisto)</li><li>La formación del sincitiotrofoblasto</li><li>El endometrio preparado con progesterona y estrógenos</li></ul>`},
+  {week:2, cat:"Trofoblasto", q:"¿Cuáles son las dos capas del trofoblasto y qué hace cada una?", a:`<ul><li><span class="key-term">Citotrofoblasto</span>: capa interna de células aplanadas; prolifera y genera el sincitiotrofoblasto</li><li><span class="key-term">Sincitiotrofoblasto</span>: capa externa multinucleada; invade el estroma endometrial destruyendo tejidos y vasos; produce la <b>gonadotropina coriónica humana (GCH)</b></li></ul>La GCH pasa al torrente circulatorio y actúa sobre el cuerpo lúteo evitando su degeneración → base de las pruebas de embarazo.<div class="diagram-mini">🔬 GCH = prueba de embarazo positiva</div>`},
+  {week:2, cat:"Implantación", q:"¿Qué es la reacción decidual?", a:`La <span class="key-term">reacción decidual</span> es la respuesta del estroma endometrial a la invasión del trofoblasto.<br><br>Las células del estroma se <b>edematizan</b> y acumulan glucógeno y lípidos, lo que detiene la penetración del sincitiotrofoblasto hasta la capa basal del endometrio.<br><br>También protege al embrión del sistema inmunológico materno (el embrión es antigénicamente diferente).<br><br>El endometrio durante el embarazo se denomina <span class="key-term">decidua</span>.`},
+  {week:2, cat:"Trastornos", q:"¿Cuáles son los tipos de implantación ectópica?", a:`<span class="key-term">Intrauterina ectópica</span>: dentro del útero pero no en el fondo uterino → placenta previa (parte inferior del útero).<br><br><span class="key-term">Extrauterina</span>: fuera del útero:<ul><li><b>Tubárica</b> (más frecuente): en ampolla o istmo de la tuba. La tuba puede romperse antes de las 8 semanas → emergencia</li><li>Ovárica</li><li>Abdominal</li><li>Fímbrica</li></ul><div class="diagram-mini">⚠ Embarazo tubárico = urgencia médica</div>`},
+  {week:2, cat:"Placenta", q:"¿Qué es la placenta acreta, increta y percreta?", a:`Ocurren cuando falla la reacción decidual y las vellosidades coriónicas invaden capas profundas del útero:<ul><li><span class="key-term">Placenta acreta</span>: llega hasta la capa basal del endometrio</li><li><span class="key-term">Placenta increta</span>: penetra el miometrio pero no lo atraviesa</li><li><span class="key-term">Placenta percreta</span>: atraviesa toda la pared uterina y llega a la serosa peritoneal</li></ul>No se desprende en el alumbramiento; puede requerir histerectomía.`},
+  {week:3, cat:"Gastrulación", q:"¿Qué es la gastrulación y cuándo ocurre?", a:`La <span class="key-term">gastrulación</span> es el proceso por el cual las células del epiblasto migran a través de la línea primitiva formando el <b>embrión trilaminar</b> con tres hojas germinativas: ectodermo, mesodermo y endodermo.<br><br>Ocurre en la <span class="key-term">3ª semana</span>, durante los días <b>15 a 18 ± 1</b>.<br><br>Durante este período el embrión se denomina <span class="key-term">gástrula</span>.<div class="diagram-mini">Epiblasto → (gastrulación) → Ectodermo + Mesodermo + Endodermo</div>`},
+  {week:3, cat:"Línea primitiva", q:"¿Qué es la línea primitiva y qué estructuras genera?", a:`La <span class="key-term">línea primitiva</span> es una condensación de células en la línea media del extremo caudal del epiblasto. Comienza a formarse al inicio de la 3ª semana.<br><br>En su extremo craneal forma el <span class="key-term">nódulo de Hensen</span>.<br>En su centro se forma el <span class="key-term">surco primitivo</span> y la <span class="key-term">fóvea primitiva</span>.<br><br>Establece la polaridad del embrión:<ul><li>Eje cráneo-caudal</li><li>Superficie dorsal/ventral</li><li>Lados derecho/izquierdo</li></ul>`},
+  {week:3, cat:"Capas germinativas", q:"¿Cómo se forman las 3 capas germinativas durante la gastrulación?", a:`<b>Paso 1</b>: Las primeras células del epiblasto migran hacia el hipoblasto → forman el <span class="key-term">endodermo embrionario</span> (desplazando las células del hipoblasto al endodermo extraembrionario).<br><br><b>Paso 2</b>: Más células del epiblasto migran entre el epiblasto y el endodermo → forman el <span class="key-term">mesodermo intraembrionario y extraembrionario</span>.<br><br><b>Paso 3</b>: Las células del epiblasto que <b>no migran</b> forman el <span class="key-term">ectodermo</span>.<div class="diagram-mini">Por eso el epiblasto = células madre pluripotenciales de las 3 capas</div>`},
+  {week:3, cat:"Regulación molecular", q:"¿Qué moléculas regulan la formación de la línea primitiva y el desarrollo lateral?", a:`<ul><li><span class="key-term">Wnt, Nodal, Cordina</span> → región posterior del embrión → forman la línea primitiva</li><li><span class="key-term">Nodal, FGF-8, Lefty-1, Pit-2</span> → lado izquierdo → desarrollan la lateralidad (situs)</li><li><span class="key-term">Slug</span> → células del epiblasto → transformación epitelio-mesénquima en gastrulación</li><li><span class="key-term">HNF-3β</span> → nódulo primitivo → formación de la notocorda</li><li><span class="key-term">Cordina, nogina</span> → notocorda → formación de la placa neural</li></ul>`},
+  {week:3, cat:"Notocorda", q:"¿Qué es la notocorda y cuáles son sus funciones?", a:`La <span class="key-term">notocorda</span> es una estructura cilíndrica de células que se forma durante la gastrulación y discurre a lo largo del eje longitudinal del embrión.<br><br>Funciones principales:<ul><li>Define el <b>eje longitudinal</b> del embrión</li><li>Es la base para el <b>esqueleto axial</b> (huesos de cabeza y columna vertebral)</li><li>Es el <b>inductor primario</b> para el desarrollo de la placa neural → sistema nervioso central</li></ul>Persiste como el <span class="key-term">núcleo pulposo</span> de los discos intervertebrales.`},
+  {week:3, cat:"Notocorda", q:"¿Cuáles son los pasos del desarrollo de la notocorda a partir del proceso notocordal?", a:`<b>1.</b> Se desarrolla el <span class="key-term">proceso notocordal</span>.<br><b>2.</b> Se forma el <span class="key-term">conducto notocordal</span> (tubo desde el nódulo hasta la membrana bucofaríngea).<br><b>3.</b> El piso del proceso notocordal se une al endodermo → perforaciones → el conducto se comunica con el saco vitelino.<br><b>4.</b> Desaparece el piso → se forma la <span class="key-term">placa notocordal</span> acanalada → se crea el <span class="key-term">canal neuroentérico</span>.<br><b>5.</b> La placa notocordal se invagina → se forma la notocorda definitiva y se cierra el canal neuroentérico.`},
+  {week:3, cat:"Capas germinativas", q:"¿Qué origina el ectodermo y sus subdivisiones?", a:`<span class="key-term">Ectodermo superficial</span>:<ul><li>Epidermis, cabello, uñas, glándulas de la piel y mamarias</li><li>Hipófisis anterior, esmalte dental, oído interno, cristalino</li></ul><span class="key-term">Neuroectodermo / Cresta neural</span>:<ul><li>Ganglios y nervios sensoriales y craneales</li><li>Médula de glándula suprarrenal, dentina, melanocitos</li><li>Cartílagos y huesos de la cara</li></ul><span class="key-term">Tubo neural</span>: sistema nervioso central, retina, pineal, hipófisis posterior.`},
+  {week:3, cat:"Capas germinativas", q:"¿Qué origina el mesodermo y sus subdivisiones?", a:`<ul><li><span class="key-term">Mesodermo de la cabeza</span>: cráneo, tejido conjuntivo de la cabeza, cemento</li><li><span class="key-term">Mesodermo paraaxial</span>: músculo esquelético (cabeza, tronco, extremidades), esqueleto excepto cráneo, dermis y tejido conjuntivo</li><li><span class="key-term">Mesodermo intermedio</span>: sistema urogenital</li><li><span class="key-term">Mesodermo lateral</span>: tejido conjuntivo y músculo de vísceras, membranas serosas (pleura, pericardio, peritoneo), corazón, células hematopoyéticas, bazo, corteza suprarrenal</li></ul>`},
+  {week:3, cat:"Capas germinativas", q:"¿Qué origina el endodermo?", a:`El <span class="key-term">endodermo</span> origina:<ul><li>Epitelio y glándulas de tráquea, bronquios y pulmones</li><li>Epitelio y glándulas del tubo digestivo, parénquima del hígado y del páncreas</li><li>Epitelio de la vejiga urinaria y uraco</li><li>Epitelio de la faringe, cavidad timpánica, tuba auditiva y amígdalas</li><li>Células secretoras de tiroides y paratiroides</li><li>Células reticuloepiteliales del timo</li></ul>`},
+  {week:3, cat:"Neurulación", q:"¿Qué es la neurulación y qué estructuras forma?", a:`La <span class="key-term">neurulación</span> es el proceso por el que, a partir del <b>ectodermo</b>, se forma la placa neural de la que se originan el tubo neural y la cresta neural → dan origen al sistema nervioso.<br><br>Se inicia al final de la 3ª semana.<br><br>Pasos:<ul><li>Notocorda induce al ectodermo → forma la <span class="key-term">placa neural</span></li><li>Se forma el <span class="key-term">surco neural</span></li><li>Se elevan los <span class="key-term">pliegues neurales</span></li><li>Se fusionan → <span class="key-term">tubo neural</span></li><li>Se separa la <span class="key-term">cresta neural</span></li></ul>`},
+  {week:3, cat:"Neurulación", q:"¿Qué son el neuroporo rostral y caudal y qué pasa si no se cierran?", a:`El <span class="key-term">neuroporo rostral (cefálico)</span> y el <span class="key-term">neuroporo caudal</span> son los extremos abiertos del tubo neural que se cierran al final de la 4ª semana.<br><br>Si no se cierran → <span class="key-term">Defectos del Tubo Neural (DTN)</span>:<ul><li><b>Anencefalia</b>: no cierre del neuroporo rostral (incompatible con la vida)</li><li><b>Espina bífida</b> y <b>encefalocele</b>: no cierre del neuroporo caudal</li></ul><div class="diagram-mini">💊 El ácido fólico reduce la incidencia de DTN hasta en un 80%</div>`},
+  {week:3, cat:"Mesodermo", q:"¿Cuáles son las 4 porciones del mesodermo y cómo se organizan?", a:`De la línea media hacia los bordes del disco embrionario:<ul><li><span class="key-term">Mesodermo axial</span> (proceso notocordal): forma la notocorda</li><li><span class="key-term">Mesodermo paraaxial</span>: se segmenta en somitómeros y luego <b>somites</b></li><li><span class="key-term">Mesodermo intermedio</span>: origina el sistema urogenital</li><li><span class="key-term">Mesodermo lateral</span>: se delamina en mesodermo somático (somatopleura) y esplácnico (esplacnopleura); entre ellos → <b>celoma intraembrionario</b></li></ul>`},
+  {week:3, cat:"Somites", q:"¿Qué son los somites y cuál es su importancia clínica?", a:`Los <span class="key-term">somites</span> son conglomerados de células del mesodermo paraaxial que se forman a partir del día <b>20 ± 1</b>. Se forman en pares a ambos lados de la línea media en secuencia cefalocaudal.<br><br>Para la 5ª semana hay <b>42-44 pares de somites</b> (~3 pares por día).<br><br>Importancia clínica: el <span class="key-term">número de pares de somites</span> es el criterio principal para determinar la <b>edad del embrión</b> en este período.<br><br>Darán lugar a: músculo esquelético, esqueleto axial y dermis.`},
+  {week:3, cat:"Sistema circulatorio", q:"¿Cuándo comienza el desarrollo del sistema circulatorio y cómo se forman los primeros vasos?", a:`El desarrollo del sistema circulatorio comienza en la <span class="key-term">3ª semana</span>, ~día 18 ± 1 en el mesodermo extraembrionario esplácnico del saco vitelino.<br><br><b>Vasculogénesis</b>: los angioblastos (del mesodermo) se diferencian en células endoteliales que se unen formando cordones macizos → canalizan → primeros vasos.<br><br><b>Angiogénesis</b>: crecimiento de vasos a partir de vasos preexistentes por proliferación de células endoteliales.<br><br>Las primeras células sanguíneas entran en circulación el día 22.`},
+  {week:3, cat:"Teratoma", q:"¿Qué es el teratoma sacrococcígeo y cuál es su causa?", a:`El <span class="key-term">teratoma sacrococcígeo</span> es el tumor congénito más común en recién nacidos. Se presenta en <b>1 de cada 35,000-40,000</b> recién nacidos y es más común en niñas.<br><br>Se origina por la <span class="key-term">persistencia de restos de la línea primitiva</span>. Como esas células son pluripotenciales, los tumores están formados por tejidos derivados de las 3 hojas germinativas.<br><br>Pueden ser <b>maduros</b> (bien diferenciados) o <b>inmaduros</b> (elevada incidencia de malignidad).<div class="diagram-mini">📍 Localización más frecuente: extremo caudal del cuerpo</div>`},
+  {week:3, cat:"Movimiento celular", q:"¿Cuáles son los cambios celulares durante la gastrulación (transformación epitelio-mesénquima)?", a:`Las células del epiblasto forman un epitelio cilíndrico unido. Durante la gastrulación:<ul><li>Se desplazan hacia la <b>línea primitiva</b></li><li>Cambian su forma → <b>células en botella</b> (alargándose y perdiendo lámina basal)</li><li>Se desprenden del epiblasto → se diferencian en <span class="key-term">células mesenquimáticas</span> (libres, sin uniones celulares)</li><li>Migran gracias al <b>ácido hialurónico</b> (secretado por el epiblasto) y la <b>fibronectina</b></li></ul>Este cambio se debe a la pérdida de <b>cadherinas</b>.`}
+];
+
+let filtered = [...allCards];
+let current = 0;
+let isFlipped = false;
+let scores = { easy: 0, medium: 0, hard: 0 };
+let cardRatings = {};
+let activeFilter = 'all';
+
+function setFilter(f) {
+  activeFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => {
+    b.className = 'filter-btn';
+  });
+  const btns = document.querySelectorAll('.filter-btn');
+  const labels = ['all','1','2','3','hard'];
+  const activeClasses = ['active-all','active-1','active-2','active-3','active-all'];
+  btns[labels.indexOf(f)].classList.add(activeClasses[labels.indexOf(f)]);
+
+  if (f === 'hard') {
+    filtered = allCards.filter(c => cardRatings[allCards.indexOf(c)] === 'hard');
+    if (filtered.length === 0) { filtered = [...allCards]; }
+  } else if (f === 'all') {
+    filtered = [...allCards];
+  } else {
+    filtered = allCards.filter(c => c.week == parseInt(f));
+  }
+  current = 0;
+  renderCard();
+}
+
+function renderCard() {
+  if (filtered.length === 0) return;
+  const c = filtered[current];
+  isFlipped = false;
+  document.getElementById('cardInner').classList.remove('flipped');
+
+  const weekLabels = {1:'Semana 1', 2:'Semana 2', 3:'Semana 3'};
+  const badgeClass = `badge-${c.week}`;
+
+  document.getElementById('weekBadge').className = `card-week-badge ${badgeClass}`;
+  document.getElementById('weekBadge').textContent = weekLabels[c.week];
+  document.getElementById('weekBadgeBack').className = `card-week-badge ${badgeClass}`;
+  document.getElementById('weekBadgeBack').textContent = weekLabels[c.week];
+
+  document.getElementById('cardCategory').textContent = c.cat;
+  document.getElementById('cardCategoryBack').textContent = c.cat;
+  document.getElementById('cardQuestion').textContent = c.q;
+  document.getElementById('cardAnswer').innerHTML = c.a;
+
+  const pct = ((current + 1) / filtered.length) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('counter').textContent = `${current + 1} / ${filtered.length}`;
+
+  document.getElementById('btnPrev').disabled = current === 0;
+  document.getElementById('btnNext').disabled = current === filtered.length - 1;
+}
+
+function flipCard() {
+  isFlipped = !isFlipped;
+  document.getElementById('cardInner').classList.toggle('flipped', isFlipped);
+}
+
+function rate(level, e) {
+  e.stopPropagation();
+  const idx = allCards.indexOf(filtered[current]);
+  const prev = cardRatings[idx];
+  if (prev) scores[prev] = Math.max(0, scores[prev] - 1);
+  cardRatings[idx] = level;
+  scores[level]++;
+  document.getElementById('count-easy').textContent = scores.easy;
+  document.getElementById('count-medium').textContent = scores.medium;
+  document.getElementById('count-hard').textContent = scores.hard;
+  if (current < filtered.length - 1) {
+    setTimeout(() => { current++; renderCard(); }, 300);
+  }
+}
+
+function nextCard() {
+  if (current < filtered.length - 1) { current++; renderCard(); }
+}
+
+function prevCard() {
+  if (current > 0) { current--; renderCard(); }
+}
+
+function shuffle() {
+  for (let i = filtered.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [filtered[i], filtered[j]] = [filtered[j], filtered[i]];
+  }
+  current = 0;
+  renderCard();
+}
+
+renderCard();
+document.getElementById('cardArea').style.minHeight = '320px';
+</script>
